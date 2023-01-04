@@ -1713,7 +1713,7 @@ All styles in this repository are released under the [Creative Commons Attributi
 
 `Zotero` 怎么看自带的存贮(Storage)剩余情况呢 <https://zhuanlan.zhihu.com/p/427955654>。
 
-`Zotero`如何清空Zotero自带的免费300M空间见<https://zhuanlan.zhihu.com/p/596614249>。
+`Zotero`如何清空Zotero自带的免费300M存贮空间见<https://zhuanlan.zhihu.com/p/596614249>。
 
 `Zotero` 安装 ZotFile 后删除条目和附件见 <https://zhuanlan.zhihu.com/p/369141058>。
 
