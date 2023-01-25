@@ -305,6 +305,21 @@
       <term name="letter" form="short">thư</term>
     </terms>
   </locale>
+  <locale xml:lang="zh">
+    <terms>
+      <term name="and others" form="short">等人</term>
+      <term name="edition" form="short">版</term>
+      <term name="in">见</term>
+      <term name="retrieved">取</term>
+      <term name="from">自</term>
+      <term name="no date" form="short">无日期</term>
+      <term name="chapter" form="short">章</term>
+      <term name="page" form="short">
+        <single>p.</single>
+        <multiple>pp.</multiple>
+      </term>
+    </terms>
+  </locale>
   <locale xml:lang="zh-CN">
     <terms>
       <term name="letter">的私人交流</term>
@@ -600,6 +615,57 @@
       </group>
     </group>
   </macro>
+  <macro name="date-bib-zh">
+    <group delimiter=" " prefix="(" suffix=")">
+      <choose>
+        <if is-uncertain-date="issued">
+          <text term="circa" form="short"/>
+        </if>
+      </choose>
+      <group>
+        <choose>
+          <if variable="issued">
+            <date variable="issued">
+              <date-part name="year"/>
+            </date>
+            <text variable="year-suffix"/>
+            <choose>
+              <if type="article-magazine article-newspaper broadcast interview motion_picture pamphlet personal_communication post post-weblog song speech webpage" match="any">
+                <!-- Many video and audio examples in manual give full dates. Err on the side of too much information. -->
+                <date variable="issued">
+                  <date-part prefix="-" name="month" form="numeric-leading-zeros"/>
+                  <date-part prefix="-" name="day" form="numeric-leading-zeros"/>
+                </date>
+              </if>
+              <else-if type="paper-conference">
+                <!-- Capture 'speech' stored as 'paper-conference' -->
+                <choose>
+                  <if variable="collection-editor editor editorial-director issue page volume" match="none">
+                    <date variable="issued">
+                      <date-part prefix="-" name="month" form="numeric-leading-zeros"/>
+                      <date-part prefix="-" name="day" form="numeric-leading-zeros"/>
+                    </date>
+                  </if>
+                </choose>
+              </else-if>
+              <!-- Only year: article article-journal book chapter entry entry-dictionary entry-encyclopedia dataset figure graphic
+                   manuscript map musical_score paper-conference[published] patent report review review-book thesis -->
+            </choose>
+          </if>
+          <else-if variable="status">
+            <group>
+              <text variable="status" text-case="lowercase"/>
+              <text variable="year-suffix" prefix="-"/>
+            </group>
+          </else-if>
+          <else>
+            <text term="no date" form="short"/>
+            <text variable="year-suffix" prefix="-"/>
+          </else>
+        </choose>
+      </group>
+    </group>
+  </macro>
   <macro name="date-sort-group">
     <!-- APA sorts 1. no-date items, 2. items with dates, 3. in-press (status) items -->
     <choose>
@@ -689,6 +755,23 @@
         <group delimiter=" ">
           <text macro="bracketed"/>
           <text macro="parenthetical"/>
+        </group>
+      </else>
+    </choose>
+  </macro>
+  <macro name="title-and-descriptions-zh">
+    <choose>
+      <if variable="title">
+        <group delimiter=" ">
+          <text macro="title"/>
+          <text macro="parenthetical-zh"/>
+          <text macro="bracketed"/>
+        </group>
+      </if>
+      <else>
+        <group delimiter=" ">
+          <text macro="bracketed"/>
+          <text macro="parenthetical-zh"/>
         </group>
       </else>
     </choose>
@@ -847,7 +930,64 @@
         <else>
           <group delimiter="; ">
             <text macro="secondary-contributors"/>
+            <!-- 书籍不显示存储位置 -->
+            <!-- <text macro="database-location"/> -->
+            <text macro="number"/>
+            <text macro="locators-booklike"/>
+          </group>
+        </else>
+      </choose>
+    </group>
+  </macro>
+  <macro name="parenthetical-zh">
+    <!-- (Secondary contributors; Database location; Genre no. 123; Report Series 123, Version, Edition, Volume, Page) -->
+    <group prefix="(" suffix=")">
+      <choose>
+        <if type="patent">
+          <!-- authority: U.S. ; genre: patent ; number: 123,445 -->
+          <group delimiter=" ">
+            <text variable="authority" form="short"/>
+            <choose>
+              <if variable="genre">
+                <text variable="genre" text-case="capitalize-first"/>
+              </if>
+              <else>
+                <!-- This should be localized -->
+                <text value="patent" text-case="capitalize-first"/>
+              </else>
+            </choose>
+            <group delimiter=" ">
+              <!-- Replace with label variable="number" if that becomes available -->
+              <text term="issue" form="short" text-case="capitalize-first"/>
+              <text variable="number"/>
+            </group>
+          </group>
+        </if>
+        <else-if type="post webpage" match="any">
+          <!-- For post webpage, container-title is treated as publisher -->
+          <group delimiter="; ">
+            <text macro="secondary-contributors-zh"/>
             <text macro="database-location"/>
+            <text macro="number"/>
+            <text macro="locators-booklike"/>
+          </group>
+        </else-if>
+        <else-if variable="container-title">
+          <group delimiter="; ">
+            <text macro="secondary-contributors-zh"/>
+            <choose>
+              <if type="broadcast graphic map motion_picture song" match="any">
+                <!-- For audiovisual media, number information comes after title, not container-title -->
+                <text macro="number"/>
+              </if>
+            </choose>
+          </group>
+        </else-if>
+        <else>
+          <group delimiter="; ">
+            <text macro="secondary-contributors-zh"/>
+            <!-- 书籍不显示存储位置 -->
+            <!-- <text macro="database-location"/> -->
             <text macro="number"/>
             <text macro="locators-booklike"/>
           </group>
@@ -860,7 +1000,6 @@
       <if variable="container-title" match="any">
         <group prefix="(" suffix=")">
           <group delimiter="; ">
-            <text macro="database-location"/>
             <choose>
               <if type="broadcast graphic map motion_picture song" match="none">
                 <!-- For audiovisual media, number information comes after title, not container-title -->
@@ -868,6 +1007,23 @@
               </if>
             </choose>
             <text macro="locators-booklike"/>
+          </group>
+        </group>
+      </if>
+    </choose>
+  </macro>
+  <macro name="parenthetical-container-zh">
+    <choose>
+      <if variable="container-title" match="any">
+        <group prefix="(" suffix=")">
+          <group delimiter="; ">
+            <choose>
+              <if type="broadcast graphic map motion_picture song" match="none">
+                <!-- For audiovisual media, number information comes after title, not container-title -->
+                <text macro="number"/>
+              </if>
+            </choose>
+            <text macro="locators-booklike-zh"/>
           </group>
         </group>
       </if>
@@ -1211,6 +1367,26 @@
       </else>
     </choose>
   </macro>
+  <macro name="secondary-contributors-zh">
+    <choose>
+      <if type="article-journal article-magazine article-newspaper post-weblog review review-book" match="any">
+        <text macro="secondary-contributors-periodical-zh"/>
+      </if>
+      <else-if type="paper-conference">
+        <choose>
+          <if variable="collection-editor editor editorial-director" match="any">
+            <text macro="secondary-contributors-booklike-zh"/>
+          </if>
+          <else>
+            <text macro="secondary-contributors-periodical-zh"/>
+          </else>
+        </choose>
+      </else-if>
+      <else>
+        <text macro="secondary-contributors-booklike-zh"/>
+      </else>
+    </choose>
+  </macro>
   <macro name="secondary-contributors-periodical">
     <group delimiter="; ">
       <choose>
@@ -1224,6 +1400,22 @@
       <names variable="translator" delimiter="; ">
         <name and="symbol" initialize-with=". " delimiter=", "/>
         <label form="short" prefix=", " text-case="title"/>
+      </names>
+    </group>
+  </macro>
+  <macro name="secondary-contributors-periodical-zh">
+    <group delimiter="; ">
+      <choose>
+        <if variable="title">
+          <names variable="interviewer" delimiter="; ">
+            <name initialize-with=". " delimiter=", "/>
+            <label form="short" prefix=", " text-case="title"/>
+          </names>
+        </if>
+      </choose>
+      <names variable="translator" delimiter="; ">
+        <name initialize-with=". " delimiter=", "/>
+        <label form="short" prefix=" " text-case="title"/>
       </names>
     </group>
   </macro>
@@ -1265,6 +1457,50 @@
             <names variable="editor translator" delimiter="; ">
               <name and="symbol" initialize-with=". " delimiter=", "/>
               <label form="short" prefix=", " text-case="title"/>
+            </names>
+          </group>
+        </else>
+      </choose>
+    </group>
+  </macro>
+  <macro name="secondary-contributors-booklike-zh">
+    <group delimiter="; ">
+      <choose>
+        <if variable="title">
+          <names variable="interviewer">
+            <name initialize-with=". " delimiter=", "/>
+            <label form="short" prefix=" " text-case="title"/>
+          </names>
+        </if>
+      </choose>
+      <!-- When editortranslator becomes available, add a test: variable="editortranslator" match="none"; then print translator -->
+      <choose>
+        <if type="post webpage" match="none">
+          <!-- Webpages treat container-title like publisher -->
+          <choose>
+            <if variable="container-title" match="none">
+              <group delimiter="; ">
+                <names variable="container-author">
+                  <label form="verb-short" suffix=" " text-case="title"/>
+                  <name initialize-with=". " delimiter=", "/>
+                </names>
+                <names variable="editor translator" delimiter="; ">
+                  <name initialize-with=". " delimiter=", "/>
+                  <label form="short" prefix=" " text-case="title"/>
+                </names>
+              </group>
+            </if>
+          </choose>
+        </if>
+        <else>
+          <group delimiter="; ">
+            <names variable="container-author">
+              <label form="verb-short" suffix=" " text-case="title"/>
+              <name initialize-with=". " delimiter=", "/>
+            </names>
+            <names variable="editor translator" delimiter="; ">
+              <name initialize-with=". " delimiter=", "/>
+              <label form="short" prefix=" " text-case="title"/>
             </names>
           </group>
         </else>
@@ -1334,6 +1570,29 @@
       </else>
     </choose>
   </macro>
+  <macro name="locators-booklike-zh">
+    <choose>
+      <if type="article-journal article-magazine article-newspaper broadcast interview patent post post-weblog review review-book speech webpage" match="any"/>
+      <else-if type="paper-conference">
+        <choose>
+          <if variable="collection-editor editor editorial-director" match="any">
+            <group delimiter=", ">
+              <text macro="version"/>
+              <text macro="edition"/>
+              <text macro="volume-booklike-zh"/>
+            </group>
+          </if>
+        </choose>
+      </else-if>
+      <else>
+        <group delimiter=", ">
+          <text macro="version"/>
+          <text macro="edition"/>
+          <text macro="volume-booklike-zh"/>
+        </group>
+      </else>
+    </choose>
+  </macro>
   <macro name="version">
     <choose>
       <if is-numeric="version">
@@ -1393,6 +1652,27 @@
             <number variable="number-of-volumes" form="numeric"/>
           </group>
         </else>
+      </choose>
+      <group delimiter=" ">
+        <label variable="issue" text-case="capitalize-first"/>
+        <text variable="issue"/>
+      </group>
+      <group delimiter=" ">
+        <label variable="page" form="short" suffix=" "/>
+        <text variable="page"/>
+      </group>
+    </group>
+  </macro>
+  <macro name="volume-booklike-zh">
+    <group delimiter=", ">
+      <!-- Report series [ex. 52] -->
+      <choose>
+        <if type="report">
+          <group delimiter=" ">
+            <text variable="collection-title" text-case="title"/>
+            <text variable="collection-number"/>
+          </group>
+        </if>
       </choose>
       <group delimiter=" ">
         <label variable="issue" text-case="capitalize-first"/>
@@ -1522,6 +1802,29 @@
       </else-if>
     </choose>
   </macro>
+  <macro name="container-zh">
+    <choose>
+      <if type="article-journal article-magazine article-newspaper post-weblog review review-book" match="any">
+        <!-- Periodical items -->
+        <text macro="container-periodical"/>
+      </if>
+      <else-if type="paper-conference">
+        <!-- Determine if paper-conference is a periodical or booklike -->
+        <choose>
+          <if variable="editor editorial-director collection-editor container-author" match="any">
+            <text macro="container-booklike-zh"/>
+          </if>
+          <else>
+            <text macro="container-periodical"/>
+          </else>
+        </choose>
+      </else-if>
+      <else-if type="post webpage" match="none">
+        <!-- post and webpage treat container-title like publisher -->
+        <text macro="container-booklike-zh"/>
+      </else-if>
+    </choose>
+  </macro>
   <macro name="container-periodical">
     <group delimiter=". ">
       <group delimiter=", ">
@@ -1594,6 +1897,41 @@
       </if>
     </choose>
   </macro>
+  <macro name="container-booklike-zh">
+    <choose>
+      <if variable="container-title" match="any">
+        <group delimiter=" ">
+          <text term="in" text-case="capitalize-first"/>
+          <group delimiter=", ">
+            <names variable="editor translator" delimiter=", &amp; ">
+              <!-- Change to editortranslator and move editor to substitute as that becomes available -->
+              <name initialize-with=". " delimiter=", "/>
+              <label form="short" prefix=" (" suffix=")"/>
+              <substitute>
+                <names variable="editorial-director"/>
+                <names variable="collection-editor"/>
+                <names variable="container-author"/>
+              </substitute>
+            </names>
+            <group delimiter=" ">
+              <text variable="container-title" font-style="italic"/>
+              <!-- Replace with volume-title as that becomes available -->
+              <choose>
+                <if is-numeric="volume">
+                  <number variable="volume" form="long-ordinal" prefix="(" suffix=")"/>
+                </if>
+                <else>
+                  <text variable="volume" prefix="(" suffix=")"/>
+                </else>
+              </choose>
+            </group>
+          </group>
+          <text macro="parenthetical-container-zh"/>
+          <text macro="bracketed-container"/>
+        </group>
+      </if>
+    </choose>
+  </macro>
   <macro name="publisher">
     <group delimiter="; ">
       <choose>
@@ -1642,25 +1980,75 @@
       </group>
     </group>
   </macro>
-  <macro name="access">
-    <choose>
-      <if variable="DOI" match="any">
-        <text variable="DOI" prefix="https://doi.org/"/>
-      </if>
-      <else-if variable="URL">
-        <group delimiter=" ">
+  <macro name="publisher-zh">
+    <group delimiter="; ">
+      <choose>
+        <if type="thesis">
           <choose>
-            <if variable="issued status" match="none">
-              <group delimiter=" ">
-                <text term="retrieved" text-case="capitalize-first"/>
-                <date variable="accessed" form="text" suffix=","/>
-                <text term="from"/>
-              </group>
+            <if variable="archive DOI URL" match="none">
+              <text variable="publisher"/>
             </if>
           </choose>
-          <text variable="URL"/>
-        </group>
-      </else-if>
+        </if>
+        <else-if type="post webpage" match="any">
+          <!-- For websites, treat container title like publisher -->
+          <group delimiter="; ">
+            <text variable="container-title" text-case="title"/>
+            <text variable="publisher"/>
+          </group>
+        </else-if>
+        <else-if type="paper-conference">
+          <!-- For paper-conference, don't print publisher if in a journal-like proceedings -->
+          <choose>
+            <if variable="collection-editor editor editorial-director" match="any">
+              <text variable="publisher"/>
+            </if>
+          </choose>
+        </else-if>
+        <else-if type="article-journal article-magazine article-newspaper post-weblog" match="none">
+          <!-- 中文图书需要添加出版地 -->
+          <group delimiter=": ">
+            <text variable="publisher-place"/>
+            <text variable="publisher"/>
+          </group>
+        </else-if>
+      </choose>
+      <group delimiter=", ">
+        <choose>
+          <if variable="archive-place">
+            <!-- With `archive-place`: physical archives. Without: online archives. -->
+            <!-- For physical archives, print the location before the archive name.
+                For electronic archives, these are printed in macro="description". -->
+            <!-- Split "archive_location" into "archive_collection" and "archive_location" as that becomes available -->
+            <!-- Must test for archive_collection:
+                With collection: archive_collection (archive_location), archive, archive-place
+                No collection: archive (archive_location), archive-place
+            -->
+            <text variable="archive_location"/>
+          </if>
+        </choose>
+        <text variable="archive"/>
+        <text variable="archive-place"/>
+      </group>
+    </group>
+  </macro>
+  <macro name="access">
+    <choose>
+      <!-- 提前上线有doi的预出版论文或者只有论文编号而无页码的电子刊论文显示  -->
+      <if variable="DOI" type="article-journal" match="all">
+        <choose>
+          <if variable="status">
+            <text variable="DOI" prefix="https://doi.org/"/>
+          </if>
+          <else-if variable="number">
+            <choose>
+              <if variable="page" match="none">
+                <text variable="DOI" prefix="https://doi.org/"/>
+              </if>
+            </choose>
+          </else-if>
+        </choose>
+      </if>
     </choose>
   </macro>
   <macro name="event">
@@ -1740,6 +2128,7 @@
             </group>
             <text variable="references"/>
           </group>
+          <text macro="access"/>
         </group>
       </if>
       <else-if type="bill">
@@ -1772,6 +2161,7 @@
             </group>
             <text variable="references"/>
           </group>
+          <text macro="access"/>
         </group>
       </else-if>
       <else-if type="legislation">
@@ -1787,6 +2177,7 @@
             </group>
             <text variable="references"/>
           </group>
+          <text macro="access"/>
         </group>
       </else-if>
       <else-if type="treaty">
@@ -1800,6 +2191,7 @@
           </names>
           <text macro="date-legal"/>
           <text macro="container-legal"/>
+          <text macro="access"/>
         </group>
       </else-if>
     </choose>
@@ -2003,6 +2395,7 @@
             <text macro="event"/>
             <text macro="publisher"/>
           </group>
+          <text macro="access"/>
           <text macro="publication-history"/>
         </group>
       </else>
@@ -2025,12 +2418,13 @@
         <group delimiter=" ">
           <group delimiter=". " suffix=".">
             <text macro="author-bib-zh"/>
-            <text macro="date-bib"/>
-            <text macro="title-and-descriptions"/>
-            <text macro="container"/>
+            <text macro="date-bib-zh"/>
+            <text macro="title-and-descriptions-zh"/>
+            <text macro="container-zh"/>
             <text macro="event"/>
-            <text macro="publisher"/>
+            <text macro="publisher-zh"/>
           </group>
+          <text macro="access"/>
           <text macro="publication-history"/>
         </group>
       </else>
@@ -2050,7 +2444,7 @@
       <text macro="citation-layout"/>
     </layout>
   </citation>
-  <bibliography hanging-indent="true" et-al-min="21" et-al-use-first="19" et-al-use-last="true" entry-spacing="0" line-spacing="2">
+  <bibliography hanging-indent="true" et-al-min="8" et-al-use-first="6" et-al-use-last="true" entry-spacing="0" line-spacing="2">
     <sort>
       <key macro="author-bib"/>
       <key macro="date-sort-group"/>
